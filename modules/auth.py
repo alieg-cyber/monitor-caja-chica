@@ -40,6 +40,8 @@ def hash_password(password: str) -> tuple[str, str]:
 def verify_password(password: str, stored_hash: str, salt: str) -> bool:
     """Verifica una contraseña contra su hash almacenado."""
     try:
+        stored_hash = stored_hash.strip()
+        salt = salt.strip()
         key = hashlib.pbkdf2_hmac(
             "sha256", password.encode("utf-8"), salt.encode("utf-8"), ITERATIONS
         )
@@ -82,7 +84,10 @@ def login(username: str, password: str) -> bool:
             st.error("Tu cuenta está desactivada. Contacta al administrador.")
             return False
 
-        if not verify_password(password, str(row["Password_Hash"]), str(row["Salt"])):
+        stored_hash = str(row["Password_Hash"]).strip()
+        stored_salt = str(row["Salt"]).strip()
+        logger.info("Hash len=%d Salt len=%d", len(stored_hash), len(stored_salt))
+        if not verify_password(password, stored_hash, stored_salt):
             logger.warning("Login fallido: contraseña incorrecta para '%s'", username)
             return False
 
