@@ -38,20 +38,12 @@ def _build_credentials() -> Credentials:
         sa_info = dict(st.secrets["gcp_service_account"])
         # Asegurar que el private_key tenga saltos de línea reales (no \n literal)
         if "private_key" in sa_info:
-            sa_info["private_key"] = sa_info["private_key"].replace("\\n", "\n")
-        # Campos reconocidos por google-auth
-        known_fields = {
-            "type", "project_id", "private_key_id", "private_key",
-            "client_email", "client_id", "auth_uri", "token_uri",
-            "auth_provider_x509_cert_url", "client_x509_cert_url",
-        }
-        sa_info = {k: v for k, v in sa_info.items() if k in known_fields}
+            pk = sa_info["private_key"]
+            if "\\n" in pk:
+                sa_info["private_key"] = pk.replace("\\n", "\n")
         return Credentials.from_service_account_info(sa_info, scopes=SCOPES)
-    except (KeyError, FileNotFoundError):
-        pass
-    except Exception as exc:
-        logger.error("Error construyendo credenciales desde secrets: %s", exc)
-        pass
+    except KeyError:
+        pass  # No hay secrets configurados, intentar archivo local
 
     # 2. Archivo local
     if not os.path.exists(CREDENTIALS_FILE):

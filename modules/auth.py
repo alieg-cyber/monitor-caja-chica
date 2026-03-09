@@ -66,6 +66,7 @@ def login(username: str, password: str) -> bool:
     try:
         df = read_sheet(SHEET_USUARIOS)
         if df.empty:
+            st.error("⚠️ No se pudo leer la hoja de usuarios. Verifica la conexión con Google Sheets.")
             return False
 
         mask = df["Usuario"].astype(str).str.lower() == username.strip().lower()
@@ -99,8 +100,11 @@ def login(username: str, password: str) -> bool:
         return True
 
     except Exception as exc:
+        # Propagar excepciones de control de flujo de Streamlit
+        if "StopException" in type(exc).__name__ or "RerunException" in type(exc).__name__:
+            raise
         logger.error("Error en login: %s", exc)
-        st.error(f"Error al verificar credenciales: {exc}")
+        st.error(f"⚠️ Error al conectar con Google Sheets: {exc}")
         return False
 
 
