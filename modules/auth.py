@@ -71,15 +71,18 @@ def login(username: str, password: str) -> bool:
         mask = df["Usuario"].astype(str).str.lower() == username.strip().lower()
         matches = df[mask]
         if matches.empty:
+            logger.warning("Login fallido: usuario '%s' no encontrado (total filas: %d)", username, len(df))
             return False
 
         row = matches.iloc[0]
 
-        if str(row.get("Estado", "")).strip() != ESTADO_USUARIO_ACTIVO:
+        estado = str(row.get("Estado", "")).strip()
+        if estado != ESTADO_USUARIO_ACTIVO:
             st.error("Tu cuenta está desactivada. Contacta al administrador.")
             return False
 
         if not verify_password(password, str(row["Password_Hash"]), str(row["Salt"])):
+            logger.warning("Login fallido: contraseña incorrecta para '%s'", username)
             return False
 
         # Guardar sesión
