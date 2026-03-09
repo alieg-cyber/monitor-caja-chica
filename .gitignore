@@ -1,0 +1,28 @@
+# ============================================================
+# .gitignore — Monitor de Caja Chica
+# ============================================================
+
+# Credenciales y datos sensibles — NUNCA subir al repositorio
+credentials.json
+.env
+.streamlit/secrets.toml
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# VS Code
+.vscode/
+
+# Streamlit cache local
+.streamlit/cache/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+desktop.ini
