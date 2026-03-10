@@ -99,7 +99,8 @@ hr { border-color: #1F2937 !important; opacity: 1 !important; }
 
 def render_home():
     user = st.session_state["user"]
-    render_sidebar_user()────────────────
+    render_sidebar_user()
+
 def render_login():
     _, col, _ = st.columns([1, 1.1, 1])
     with col:
