@@ -3,6 +3,7 @@ modules/auth.py — Autenticación, gestión de sesión y permisos.
 Usa PBKDF2-HMAC-SHA256 para el hash de contraseñas.
 """
 import hashlib
+import hmac
 import os
 import binascii
 import logging
@@ -46,10 +47,7 @@ def verify_password(password: str, stored_hash: str, salt: str) -> bool:
             "sha256", password.encode("utf-8"), salt.encode("utf-8"), ITERATIONS
         )
         candidate = binascii.hexlify(key).decode()
-        # Comparación en tiempo constante para evitar timing attacks
-        result = hashlib.compare_digest(candidate, stored_hash)
-        logger.warning("DEBUG verify: candidate_start=%s match=%s", candidate[:8], result)
-        return result
+        return hmac.compare_digest(candidate, stored_hash)
     except Exception as exc:
         logger.error("ERROR en verify_password: %s", exc)
         return False
@@ -90,7 +88,6 @@ def login(username: str, password: str) -> bool:
         stored_hash = str(row["Password_Hash"]).strip()
         stored_salt = str(row["Salt"]).strip()
         password_clean = password.strip()
-        logger.warning("DEBUG hash_len=%d salt_len=%d pass_len=%d hash_start=%s", len(stored_hash), len(stored_salt), len(password_clean), stored_hash[:8])
         if not verify_password(password_clean, stored_hash, stored_salt):
             logger.warning("Login fallido: contraseña incorrecta para '%s'", username)
             return False
