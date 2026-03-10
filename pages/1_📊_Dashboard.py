@@ -16,7 +16,7 @@ MIN_BALANCE = 300_000  # Cash floor — never go below this
 st.set_page_config(page_title=f"Dashboard — {APP_NAME}", page_icon="$", layout="wide")
 
 user = require_auth()
-from app import render_sidebar_user
+from modules.ui import render_sidebar_user
 render_sidebar_user()
 
 # ── Period selector ───────────────────────────────────────────────────────────
