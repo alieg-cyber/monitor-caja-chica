@@ -18,22 +18,23 @@ st.set_page_config(page_title=f"Dashboard — {APP_NAME}", page_icon="📊", lay
 user = require_auth()
 require_permission(user, "ver_dashboard")
 
-# Sidebar
 from app import render_sidebar_user
 render_sidebar_user()
 
-# Correr alertas
 try:
     run_alert_checks()
 except Exception:
     pass
 
-st.title("📊 Dashboard · Caja Chica")
-st.caption("Actualización automática cada 30 segundos al recargar la página.")
+st.markdown("""
+<div style="margin-bottom:1.5rem;">
+    <p style="font-size:0.7rem; color:#4F8EF7; text-transform:uppercase; letter-spacing:0.1em; margin:0 0 0.3rem;">PANEL</p>
+    <h1 style="font-size:2rem; font-weight:700; color:#E8EDF5; letter-spacing:-0.03em; margin:0;">Dashboard</h1>
+</div>
+""", unsafe_allow_html=True)
+st.divider()
 
-# ──────────────────────────────────────────────
 # Filtro de periodo
-# ──────────────────────────────────────────────
 col_f1, col_f2, _ = st.columns([2, 2, 4])
 with col_f1:
     hoy = date.today()
@@ -54,9 +55,7 @@ kpis = get_kpis(
 )
 moneda = kpis["moneda"]
 
-# ──────────────────────────────────────────────
 # KPI Cards
-# ──────────────────────────────────────────────
 k1, k2, k3, k4, k5 = st.columns(5)
 
 saldo = kpis["saldo_actual"]
@@ -65,30 +64,30 @@ saldo_delta_color = "normal" if saldo >= saldo_min else "inverse"
 
 with k1:
     st.metric(
-        label="💰 Saldo Actual",
+        label="Saldo Actual",
         value=f"{moneda} {saldo:,.2f}",
         delta=f"Mín: {moneda} {saldo_min:,.2f}",
         delta_color=saldo_delta_color,
     )
 with k2:
     st.metric(
-        label="📈 Total Ingresos",
+        label="Total Ingresos",
         value=f"{moneda} {kpis['total_ingresos']:,.2f}",
     )
 with k3:
     st.metric(
-        label="📉 Total Egresos",
+        label="Total Egresos",
         value=f"{moneda} {kpis['total_egresos']:,.2f}",
     )
 with k4:
     st.metric(
-        label="#️⃣ Movimientos",
+        label="Movimientos",
         value=kpis["num_movimientos"],
     )
 with k5:
     alertas = kpis["alertas_activas"]
     st.metric(
-        label="🔔 Alertas Activas",
+        label="Alertas Activas",
         value=alertas,
         delta="Requieren atención" if alertas > 0 else "Sin alertas",
         delta_color="inverse" if alertas > 0 else "normal",
@@ -96,17 +95,26 @@ with k5:
 
 st.divider()
 
-# ──────────────────────────────────────────────
 # Gráficas
-# ──────────────────────────────────────────────
 df = get_transactions(
     activas_only=True,
     fecha_desde=fecha_desde.strftime("%Y-%m-%d"),
     fecha_hasta=fecha_hasta.strftime("%Y-%m-%d"),
 )
 
+CHART_LAYOUT = dict(
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(family="Inter, sans-serif", color="#9CA3AF", size=11),
+    xaxis=dict(gridcolor="#1F2937", linecolor="#1F2937", showline=True),
+    yaxis=dict(gridcolor="#1F2937", linecolor="#1F2937", showline=False),
+    legend=dict(bgcolor="rgba(0,0,0,0)", bordercolor="#1F2937"),
+    margin=dict(l=0, r=0, t=30, b=0),
+    height=310,
+)
+
 if df.empty:
-    st.info("ℹ️ No hay transacciones en el periodo seleccionado.")
+    st.info("No hay transacciones en el periodo seleccionado.")
 else:
     df["Fecha"] = pd.to_datetime(df["Fecha"], errors="coerce")
     df["Monto"] = pd.to_numeric(df["Monto"], errors="coerce").fillna(0)
@@ -115,7 +123,7 @@ else:
 
     # 1. Evolución del saldo
     with col_g1:
-        st.subheader("📈 Evolución del Saldo")
+        st.markdown("<p style='font-size:0.8rem; font-weight:600; color:#E8EDF5; margin-bottom:0.5rem;'>EVOLUCIÓN DEL SALDO</p>", unsafe_allow_html=True)
         df_sorted = df.sort_values("Timestamp_Creacion").copy()
         df_sorted["Saldo_Posterior"] = pd.to_numeric(
             df_sorted["Saldo_Posterior"], errors="coerce"
@@ -126,25 +134,24 @@ else:
             y=df_sorted["Saldo_Posterior"],
             mode="lines+markers",
             name="Saldo",
-            line=dict(color="#1E88E5", width=2),
+            line=dict(color="#4F8EF7", width=2),
+            marker=dict(size=4),
             fill="tozeroy",
-            fillcolor="rgba(30,136,229,0.15)",
+            fillcolor="rgba(79,142,247,0.08)",
         ))
         fig_saldo.add_hline(
             y=saldo_min,
             line_dash="dash",
-            line_color="red",
-            annotation_text=f"Mínimo ({moneda} {saldo_min:,.0f})",
+            line_color="#F87171",
+            annotation_text=f"Mínimo",
+            annotation_font_color="#F87171",
         )
-        fig_saldo.update_layout(
-            height=300, margin=dict(l=0, r=0, t=30, b=0),
-            xaxis_title="Fecha", yaxis_title=f"Saldo ({moneda})",
-        )
+        fig_saldo.update_layout(**CHART_LAYOUT)
         st.plotly_chart(fig_saldo, use_container_width=True)
 
     # 2. Ingresos vs Egresos por día
     with col_g2:
-        st.subheader("💹 Ingresos vs Egresos (por día)")
+        st.markdown("<p style='font-size:0.8rem; font-weight:600; color:#E8EDF5; margin-bottom:0.5rem;'>INGRESOS VS EGRESOS</p>", unsafe_allow_html=True)
         df_daily = df.copy()
         df_daily["Dia"] = df_daily["Fecha"].dt.date
         df_daily["Ingresos"] = df_daily["Monto"].apply(lambda x: x if x > 0 else 0)
@@ -156,24 +163,20 @@ else:
         fig_bar = go.Figure()
         fig_bar.add_trace(go.Bar(
             x=daily_grouped["Dia"], y=daily_grouped["Ingresos"],
-            name="Ingresos", marker_color="#43A047",
+            name="Ingresos", marker_color="#34D399", marker_opacity=0.85,
         ))
         fig_bar.add_trace(go.Bar(
             x=daily_grouped["Dia"], y=daily_grouped["Egresos"],
-            name="Egresos", marker_color="#E53935",
+            name="Egresos", marker_color="#F87171", marker_opacity=0.85,
         ))
-        fig_bar.update_layout(
-            barmode="group", height=300,
-            margin=dict(l=0, r=0, t=30, b=0),
-            xaxis_title="Fecha", yaxis_title=f"Monto ({moneda})",
-        )
+        fig_bar.update_layout(barmode="group", **CHART_LAYOUT)
         st.plotly_chart(fig_bar, use_container_width=True)
 
     col_g3, col_g4 = st.columns(2)
 
     # 3. Egresos por categoría
     with col_g3:
-        st.subheader("🍩 Egresos por Categoría")
+        st.markdown("<p style='font-size:0.8rem; font-weight:600; color:#E8EDF5; margin-bottom:0.5rem;'>EGRESOS POR CATEGORÍA</p>", unsafe_allow_html=True)
         df_egresos = df[df["Monto"] < 0].copy()
         if df_egresos.empty:
             st.info("Sin egresos en el periodo.")
@@ -187,14 +190,19 @@ else:
             )
             fig_pie = px.pie(
                 cat_data, values="Total", names="Categoria",
-                hole=0.4, color_discrete_sequence=px.colors.qualitative.Set3,
+                hole=0.55,
+                color_discrete_sequence=["#4F8EF7","#34D399","#A78BFA","#F59E0B","#F87171","#60A5FA"],
             )
-            fig_pie.update_layout(height=300, margin=dict(l=0, r=0, t=30, b=0))
+            fig_pie.update_traces(textfont_color="white")
+            layout_pie = {**CHART_LAYOUT}
+            layout_pie.pop("xaxis", None)
+            layout_pie.pop("yaxis", None)
+            fig_pie.update_layout(**layout_pie)
             st.plotly_chart(fig_pie, use_container_width=True)
 
     # 4. Top 5 mayores egresos
     with col_g4:
-        st.subheader("🔝 Top 5 Mayores Egresos")
+        st.markdown("<p style='font-size:0.8rem; font-weight:600; color:#E8EDF5; margin-bottom:0.5rem;'>TOP 5 MAYORES EGRESOS</p>", unsafe_allow_html=True)
         df_top = df[df["Monto"] < 0].copy()
         if df_top.empty:
             st.info("Sin egresos en el periodo.")

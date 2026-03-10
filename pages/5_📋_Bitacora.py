@@ -18,9 +18,13 @@ require_permission(user, "ver_bitacora")
 from app import render_sidebar_user
 render_sidebar_user()
 
-st.title("📋 Bitácora de Auditoría")
-st.caption("Registro inmutable de todos los cambios realizados en el sistema.")
-st.divider()
+st.markdown("""
+<div style="margin-bottom:1.5rem">
+  <p style="color:#6B7280;font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;margin:0">AUDITORÍA</p>
+  <h1 style="color:#E8EDF5;font-size:2rem;font-weight:700;margin:0.2rem 0 0">Bitácora de Auditoría</h1>
+  <p style="color:#6B7280;font-size:0.875rem;margin:0.4rem 0 0">Registro inmutable de todos los cambios realizados en el sistema.</p>
+</div>
+""", unsafe_allow_html=True)
 
 # ──────────────────────────────────────────────
 # Filtros

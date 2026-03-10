@@ -24,9 +24,13 @@ require_permission(user, "cambiar_configuracion")
 from app import render_sidebar_user
 render_sidebar_user()
 
-st.title("⚙️ Configuración del Sistema")
-st.caption("Solo usuarios con rol **Admin** pueden acceder a esta sección.")
-st.divider()
+st.markdown("""
+<div style="margin-bottom:1.5rem">
+  <p style="color:#6B7280;font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;margin:0">ADMINISTRACIÓN</p>
+  <h1 style="color:#E8EDF5;font-size:2rem;font-weight:700;margin:0.2rem 0 0">Configuración del Sistema</h1>
+  <p style="color:#6B7280;font-size:0.875rem;margin:0.4rem 0 0">Solo usuarios con rol <strong style="color:#4F8EF7">Admin</strong> pueden acceder a esta sección.</p>
+</div>
+""", unsafe_allow_html=True)
 
 tab_params, tab_users, tab_cambio_pw = st.tabs([
     "🔧 Parámetros", "👥 Usuarios", "🔑 Cambiar Contraseña"

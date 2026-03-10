@@ -33,7 +33,12 @@ except Exception:
 cfg = get_config()
 moneda = cfg.get("MONEDA", "MXN")
 
-st.title("💰 Transacciones")
+st.markdown("""
+<div style="margin-bottom:1.5rem">
+  <p style="color:#6B7280;font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;margin:0">MOVIMIENTOS</p>
+  <h1 style="color:#E8EDF5;font-size:2rem;font-weight:700;margin:0.2rem 0 0">Transacciones</h1>
+</div>
+""", unsafe_allow_html=True)
 
 tab_nueva, tab_lista, tab_editar = st.tabs(["➕ Nueva Transacción", "📋 Historial", "✏️ Editar / Anular"])
 

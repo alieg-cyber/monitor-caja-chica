@@ -26,7 +26,12 @@ with st.spinner("Verificando condiciones de alerta…"):
     except Exception as exc:
         st.warning(f"No se pudo completar la verificación de alertas: {exc}")
 
-st.title("🔔 Centro de Alertas")
+st.markdown("""
+<div style="margin-bottom:1.5rem">
+  <p style="color:#6B7280;font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;margin:0">MONITOREO</p>
+  <h1 style="color:#E8EDF5;font-size:2rem;font-weight:700;margin:0.2rem 0 0">Centro de Alertas</h1>
+</div>
+""", unsafe_allow_html=True)
 
 # ──────────────────────────────────────────────
 # Tabs por estado
