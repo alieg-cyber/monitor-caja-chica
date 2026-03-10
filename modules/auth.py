@@ -86,8 +86,9 @@ def login(username: str, password: str) -> bool:
 
         stored_hash = str(row["Password_Hash"]).strip()
         stored_salt = str(row["Salt"]).strip()
-        logger.warning("DEBUG hash_len=%d salt_len=%d hash_start=%s", len(stored_hash), len(stored_salt), stored_hash[:8])
-        if not verify_password(password, stored_hash, stored_salt):
+        password_clean = password.strip()
+        logger.warning("DEBUG hash_len=%d salt_len=%d pass_len=%d hash_start=%s", len(stored_hash), len(stored_salt), len(password_clean), stored_hash[:8])
+        if not verify_password(password_clean, stored_hash, stored_salt):
             logger.warning("Login fallido: contraseña incorrecta para '%s'", username)
             return False
 
