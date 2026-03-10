@@ -115,7 +115,7 @@ def render_sidebar_user():
                 ">{user['rol']}</div>
             </div>
             """, unsafe_allow_html=True)
-            if st.button("Sign Out", use_container_width=True):
+            if st.button("Sign Out", use_container_width=True, key="sidebar_signout"):
                 logout()
                 st.rerun()
             st.markdown(f"<div style='margin-top:1rem; font-size:0.65rem; color:#374151; text-align:center;'>v{APP_VERSION}</div>", unsafe_allow_html=True)
