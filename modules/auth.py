@@ -47,8 +47,11 @@ def verify_password(password: str, stored_hash: str, salt: str) -> bool:
         )
         candidate = binascii.hexlify(key).decode()
         # Comparación en tiempo constante para evitar timing attacks
-        return hashlib.compare_digest(candidate, stored_hash)
-    except Exception:
+        result = hashlib.compare_digest(candidate, stored_hash)
+        logger.warning("DEBUG verify: candidate_start=%s match=%s", candidate[:8], result)
+        return result
+    except Exception as exc:
+        logger.error("ERROR en verify_password: %s", exc)
         return False
 
 
