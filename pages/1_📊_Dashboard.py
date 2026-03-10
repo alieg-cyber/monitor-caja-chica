@@ -264,3 +264,99 @@ else:
     })
     st.dataframe(df_last, use_container_width=True, hide_index=True)
 
+    # ── 4. Balance growth / decline by period ────────────────────────────────
+    st.divider()
+    days_range = (fecha_hasta - fecha_desde).days
+    df_pg = df_sorted.copy()
+    if days_range > 60:
+        df_pg["_period"] = df_pg["Fecha"].dt.to_period("M").dt.start_time
+        plabel = "Monthly"
+    elif days_range > 14:
+        df_pg["_period"] = df_pg["Fecha"].dt.to_period("W").dt.start_time
+        plabel = "Weekly"
+    else:
+        df_pg["_period"] = df_pg["Fecha"].dt.normalize()
+        plabel = "Daily"
+
+    grp_pg = df_pg.groupby("_period")["Monto"].sum().reset_index()
+    grp_pg.columns = ["Period", "Net"]
+    grp_pg = grp_pg[grp_pg["Net"] != 0]
+
+    st.markdown(f"""
+    <p style="font-size:0.75rem; font-weight:600; color:#9CA3AF; letter-spacing:0.1em; text-transform:uppercase; margin:0 0 0.5rem;">{plabel.upper()} CASH CHANGE — GROWTH / DECLINE</p>
+    """, unsafe_allow_html=True)
+
+    bar_colors = ["#34D399" if v >= 0 else "#F87171" for v in grp_pg["Net"]]
+    fig_growth = go.Figure()
+    fig_growth.add_hline(y=0, line_color="#374151", line_width=1.5)
+    fig_growth.add_trace(go.Bar(
+        x=grp_pg["Period"],
+        y=grp_pg["Net"],
+        marker_color=bar_colors,
+        marker_opacity=0.88,
+        hovertemplate="<b>%{x|%b %d, %Y}</b><br>Change: $%{y:,.2f}<extra></extra>",
+    ))
+    layout_growth = {**CHART, "height": 260}
+    layout_growth["yaxis"] = {**CHART["yaxis"], "tickprefix": "$", "tickformat": ",.2f"}
+    fig_growth.update_layout(**layout_growth)
+    st.plotly_chart(fig_growth, use_container_width=True)
+
+    # ── 5. Cumulative net flow + Top expense categories ───────────────────────
+    st.markdown("<div style='margin-top:0.25rem'></div>", unsafe_allow_html=True)
+    c_cum, c_top = st.columns([3, 2])
+
+    df_cf = df_sorted.sort_values("Fecha").reset_index(drop=True)
+    df_cf["Cumulative"] = df_cf["Monto"].cumsum()
+
+    with c_cum:
+        st.markdown("""
+        <p style="font-size:0.75rem; font-weight:600; color:#9CA3AF; letter-spacing:0.1em; text-transform:uppercase; margin:0 0 0.5rem;">CUMULATIVE NET FLOW</p>
+        """, unsafe_allow_html=True)
+        val_last = df_cf["Cumulative"].iloc[-1]
+        cum_color = "#34D399" if val_last >= 0 else "#F87171"
+        cum_fill  = "rgba(52,211,153,0.07)" if val_last >= 0 else "rgba(248,113,113,0.07)"
+        fig_cum = go.Figure()
+        fig_cum.add_hline(y=0, line_color="#374151", line_width=1.5)
+        fig_cum.add_trace(go.Scatter(
+            x=df_cf["Fecha"],
+            y=df_cf["Cumulative"],
+            mode="lines",
+            line=dict(color=cum_color, width=2.5),
+            fill="tozeroy",
+            fillcolor=cum_fill,
+            hovertemplate="<b>%{x|%b %d, %Y}</b><br>Cumulative: $%{y:,.2f}<extra></extra>",
+        ))
+        layout_cum = {**CHART, "height": 260}
+        layout_cum["yaxis"] = {**CHART["yaxis"], "tickprefix": "$", "tickformat": ",.2f"}
+        fig_cum.update_layout(**layout_cum)
+        st.plotly_chart(fig_cum, use_container_width=True)
+
+    with c_top:
+        st.markdown("""
+        <p style="font-size:0.75rem; font-weight:600; color:#9CA3AF; letter-spacing:0.1em; text-transform:uppercase; margin:0 0 0.5rem;">TOP EXPENSE CATEGORIES</p>
+        """, unsafe_allow_html=True)
+        df_exp = df_sorted[df_sorted["Monto"] < 0].copy()
+        if df_exp.empty:
+            st.info("No expenses in this period.")
+        else:
+            top_cats = (
+                df_exp.groupby("Categoria")["Monto"]
+                .apply(lambda x: abs(x.sum()))
+                .reset_index()
+                .rename(columns={"Monto": "Total"})
+                .sort_values("Total", ascending=True)
+                .tail(6)
+            )
+            fig_hbar = go.Figure(go.Bar(
+                x=top_cats["Total"],
+                y=top_cats["Categoria"],
+                orientation="h",
+                marker_color="#F87171",
+                marker_opacity=0.85,
+                hovertemplate="<b>%{y}</b><br>$%{x:,.2f}<extra></extra>",
+            ))
+            layout_hbar = {**CHART, "height": 260}
+            layout_hbar["xaxis"] = {**CHART["xaxis"], "tickprefix": "$", "tickformat": ",.0f"}
+            fig_hbar.update_layout(**layout_hbar)
+            st.plotly_chart(fig_hbar, use_container_width=True)
+
