@@ -81,8 +81,9 @@ def login(username: str, password: str) -> bool:
         row = matches.iloc[0]
 
         estado = str(row.get("Estado", "")).strip()
-        if estado != ESTADO_USUARIO_ACTIVO:
-            st.error("Tu cuenta está desactivada. Contacta al administrador.")
+        # Accept both English ("Active") and legacy Spanish ("Activo") values
+        if estado not in (ESTADO_USUARIO_ACTIVO, "Activo"):
+            st.error("Your account is disabled. Contact the administrator.")
             return False
 
         stored_hash = str(row["Password_Hash"]).strip()
