@@ -163,7 +163,7 @@ def get_transactions(
         df["Fecha"] = pd.to_datetime(df["Fecha"], errors="coerce")
 
         if activas_only:
-            df = df[df["Estado"].astype(str) == ESTADO_TX_ACTIVO]
+            df = df[df["Estado"].astype(str).isin([ESTADO_TX_ACTIVO, "Activo"])]
         if fecha_desde:
             df = df[df["Fecha"] >= pd.to_datetime(fecha_desde)]
         if fecha_hasta:
@@ -188,7 +188,7 @@ def get_current_balance() -> float:
         df = read_sheet(SHEET_TRANSACCIONES)
         if df.empty or "Monto" not in df.columns:
             return 0.0
-        df = df[df["Estado"].astype(str) == ESTADO_TX_ACTIVO]
+        df = df[df["Estado"].astype(str).isin([ESTADO_TX_ACTIVO, "Activo"])]
         return float(pd.to_numeric(df["Monto"], errors="coerce").fillna(0.0).sum())
     except Exception as exc:
         logger.error("Error calculando saldo: %s", exc)
