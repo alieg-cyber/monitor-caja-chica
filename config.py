@@ -1,6 +1,5 @@
 """
-config.py — Configuración central del sistema Monitor de Caja Chica.
-Todas las constantes, nombres de hojas, columnas, roles y defaults se definen aquí.
+config.py — Central configuration for Petty Cash Monitor.
 """
 import os
 from dotenv import load_dotenv
@@ -135,99 +134,100 @@ PERMISOS: dict[str, dict[str, bool]] = {
 }
 
 # ============================================================
-# TIPOS DE TRANSACCIÓN
+# TRANSACTION TYPES
 # ============================================================
-TIPO_INGRESO = "Ingreso"
-TIPO_EGRESO = "Egreso"
-TIPO_REPOSICION = "Reposición"
-TIPO_AJUSTE = "Ajuste"
-TIPO_TRANSFERENCIA = "Transferencia"
+TIPO_INGRESO = "Income"
+TIPO_EGRESO = "Expense"
+TIPO_REPOSICION = "Replenishment"
+TIPO_AJUSTE = "Adjustment"
+TIPO_TRANSFERENCIA = "Transfer"
 TIPOS_TRANSACCION = [TIPO_INGRESO, TIPO_EGRESO, TIPO_REPOSICION, TIPO_AJUSTE, TIPO_TRANSFERENCIA]
 TIPOS_POSITIVOS = {TIPO_INGRESO, TIPO_REPOSICION}
 TIPOS_NEGATIVOS = {TIPO_EGRESO}
 TIPOS_MIXTOS = {TIPO_AJUSTE, TIPO_TRANSFERENCIA}
 
 # ============================================================
-# CATEGORÍAS
+# CATEGORIES
 # ============================================================
 CATEGORIAS: dict[str, list[str]] = {
-    TIPO_INGRESO: ["Reposición de caja", "Fondo inicial", "Devolución", "Ajuste positivo", "Otros"],
+    TIPO_INGRESO: ["Cash replenishment", "Initial fund", "Refund", "Positive adjustment", "Other"],
     TIPO_EGRESO: [
-        "Papelería y oficina",
-        "Transporte y viáticos",
-        "Limpieza y mantenimiento",
-        "Alimentos",
-        "Servicios",
-        "Gastos de representación",
-        "Material de trabajo",
-        "Mensajería y envíos",
-        "Telecomunicaciones",
-        "Otros",
+        "Office supplies",
+        "Travel & transport",
+        "Cleaning & maintenance",
+        "Food & beverages",
+        "Services",
+        "Entertainment",
+        "Work materials",
+        "Shipping & courier",
+        "Telecommunications",
+        "Other",
     ],
-    TIPO_REPOSICION: ["Reposición de caja", "Fondo adicional", "Otros"],
-    TIPO_AJUSTE: ["Ajuste de saldo", "Corrección de error", "Diferencia de cambio", "Otros"],
-    TIPO_TRANSFERENCIA: ["Transferencia interna", "Préstamo temporal", "Otros"],
+    TIPO_REPOSICION: ["Cash replenishment", "Additional fund", "Other"],
+    TIPO_AJUSTE: ["Balance adjustment", "Error correction", "Exchange difference", "Other"],
+    TIPO_TRANSFERENCIA: ["Internal transfer", "Temporary loan", "Other"],
 }
 TODAS_CATEGORIAS = sorted({cat for cats in CATEGORIAS.values() for cat in cats})
 
 # ============================================================
-# ESTADOS
+# STATES
 # ============================================================
-ESTADO_TX_ACTIVO = "Activo"
-ESTADO_TX_ANULADO = "Anulado"
+ESTADO_TX_ACTIVO = "Active"
+ESTADO_TX_ANULADO = "Voided"
 
-ESTADO_ALERTA_ACTIVA = "Activa"
-ESTADO_ALERTA_RESUELTA = "Resuelta"
-ESTADO_ALERTA_IGNORADA = "Ignorada"
+ESTADO_ALERTA_ACTIVA = "Active"
+ESTADO_ALERTA_RESUELTA = "Resolved"
+ESTADO_ALERTA_IGNORADA = "Ignored"
 
-ESTADO_CIERRE_PENDIENTE = "Pendiente"
-ESTADO_CIERRE_CONCILIADO = "Conciliado"
-ESTADO_CIERRE_CON_DIFERENCIA = "Con Diferencia"
+ESTADO_CIERRE_PENDIENTE = "Pending"
+ESTADO_CIERRE_CONCILIADO = "Reconciled"
+ESTADO_CIERRE_CON_DIFERENCIA = "With Difference"
 
-ESTADO_USUARIO_ACTIVO = "Activo"
-ESTADO_USUARIO_INACTIVO = "Inactivo"
+ESTADO_USUARIO_ACTIVO = "Active"
+ESTADO_USUARIO_INACTIVO = "Inactive"
 
 # ============================================================
-# TIPOS DE ALERTA
+# ALERT TYPES
 # ============================================================
-ALERTA_SALDO_MINIMO = "Saldo Mínimo"
-ALERTA_MOVIMIENTO_INUSUAL = "Movimiento Inusual"
-ALERTA_POSIBLE_DUPLICADO = "Posible Duplicado"
-ALERTA_CAMBIO_NO_AUTORIZADO = "Cambio No Autorizado"
-ALERTA_INACTIVIDAD = "Inactividad"
-ALERTA_DIFERENCIA_CONCILIACION = "Diferencia en Conciliación"
-ALERTA_GASTO_SIN_AUTORIZACION = "Gasto Sin Autorización"
+ALERTA_SALDO_MINIMO = "Low Balance"
+ALERTA_MOVIMIENTO_INUSUAL = "Unusual Movement"
+ALERTA_POSIBLE_DUPLICADO = "Possible Duplicate"
+ALERTA_CAMBIO_NO_AUTORIZADO = "Unauthorized Change"
+ALERTA_INACTIVIDAD = "Inactivity"
+ALERTA_DIFERENCIA_CONCILIACION = "Reconciliation Difference"
+ALERTA_GASTO_SIN_AUTORIZACION = "Unauthorized Expense"
 
-SEVERIDAD_ALTA = "Alta"
-SEVERIDAD_MEDIA = "Media"
-SEVERIDAD_BAJA = "Baja"
+SEVERIDAD_ALTA = "High"
+SEVERIDAD_MEDIA = "Medium"
+SEVERIDAD_BAJA = "Low"
 
 # ============================================================
 # CONFIGURACIÓN POR DEFECTO
 # (clave: (valor_default, descripcion))
 # ============================================================
 CONFIG_DEFAULTS: dict[str, tuple[str, str]] = {
-    "SALDO_MINIMO": ("500", "Saldo mínimo antes de generar alerta"),
+    "SALDO_MINIMO": ("300000", "Minimum balance before alert"),
     "MONTO_MAXIMO_SIN_AUTORIZACION": (
-        "1000", "Monto máximo de egreso sin autorización especial"
+        "5000", "Maximum expense amount without special authorization"
     ),
-    "DIAS_INACTIVIDAD_ALERTA": ("2", "Días sin movimientos para alerta de inactividad"),
-    "NOMBRE_EMPRESA": ("Mi Empresa", "Nombre de la empresa"),
-    "MONEDA": ("MXN", "Moneda del sistema (ISO 4217)"),
+    "DIAS_INACTIVIDAD_ALERTA": ("2", "Days without movements before inactivity alert"),
+    "NOMBRE_EMPRESA": ("My Company", "Company name"),
+    "MONEDA": ("USD", "System currency (ISO 4217)"),
     "PORCENTAJE_MOVIMIENTO_INUSUAL": (
-        "200", "% sobre el promedio histórico que clasifica un movimiento como inusual"
+        "200", "% above historical average classifying a movement as unusual"
     ),
-    "EMAIL_ALERTAS": ("", "Email para recibir alertas automáticas (vacío = desactivado)"),
-    "SMTP_HOST": ("smtp.gmail.com", "Servidor SMTP para envío de correos"),
-    "SMTP_PORT": ("587", "Puerto SMTP"),
-    "SMTP_USER": ("", "Usuario/email SMTP"),
+    "EMAIL_ALERTAS": ("", "Email for automatic alerts (empty = disabled)"),
+    "SMTP_HOST": ("smtp.gmail.com", "SMTP server for email sending"),
+    "SMTP_PORT": ("587", "SMTP port"),
+    "SMTP_USER": ("", "SMTP user/email"),
     "VENTANA_DUPLICADO_MINUTOS": (
-        "60", "Ventana en minutos para detectar transacciones duplicadas"
+        "60", "Window in minutes to detect duplicate transactions"
     ),
 }
 
 # ============================================================
 # METADATA
 # ============================================================
-APP_VERSION = "1.0.0"
-APP_NAME = "Monitor de Caja Chica"
+APP_VERSION = "2.0.0"
+APP_NAME = "Petty Cash Monitor"
+MIN_BALANCE = 300_000  # Critical floor — never go below this
